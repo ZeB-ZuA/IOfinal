@@ -176,10 +176,15 @@ radiobuttonmetodoDosPasos.addEventListener('change', () => {
 */
 const crearCampos = (campo, i, numero_variables, tipo) => {
   const input = document.createElement('input');
-  input.type = 'number';
+  input.type = 'text'; // Cambiar a 'text' para permitir fracciones
   input.required = true;
   input.id = `${tipo}_input_${i + 1}`;
   input.classList.add('funcion_objetivo_input'); // Añadir clase para identificar los inputs de la función objetivo
+
+  // Agregar evento input para validar fracciones
+  input.addEventListener('input', () => {
+    validar_numeros(input);
+  });
 
   campo.appendChild(input);
 
@@ -291,6 +296,8 @@ formulario.addEventListener('submit', async (e) => {
     );
 
     inputs_funcion_objetivo.forEach((elemento, i) => {
+      validar_numeros(elemento); // Validar fracciones antes de enviar
+
       console.log(
         `Valor del input de la función objetivo ${i + 1}: ${elemento.value}`
       );
@@ -309,6 +316,8 @@ formulario.addEventListener('submit', async (e) => {
 
       inputs.forEach((input, i) => {
         if (input.tagName === 'INPUT') {
+          validar_numeros(input); // Validar fracciones antes de enviar
+
           if (i < inputs.length - 1) {
             restriccion_final += `${input.value}x_${Math.floor(i / 2) + 1} `;
           } else {
@@ -333,6 +342,10 @@ formulario.addEventListener('submit', async (e) => {
   );
 
   const panel_datos_grafica = crear_panel_informacion_graficos(informacion);
+  const resultPanel = document.getElementById('resultPanel');
+  resultPanel.innerHTML = '';
+  resultPanel.appendChild(panel_datos_grafica);
+
   seccion_datos_grafica.innerHTML = ' ';
   seccion_datos_grafica.appendChild(panel_datos_grafica);
 
@@ -406,13 +419,13 @@ const realizarPeticion = async (funcionObjetivo, arrayRestricciones, tipo) => {
   return data;
 };
 
-window.validar_numeros = function validar_numeros(valor_nuevo) {
+const validar_numeros = (valor_nuevo) => {
   if (!valor_nuevo || !valor_nuevo.value) {
     console.error('valor_nuevo no es un input válido ' + valor_nuevo.value);
     return '';
   }
 
-  valor_nuevo.value = valor_nuevo.value.replace(/[^0-9./]/g, '');
+  valor_nuevo.value = valor_nuevo.value.replace(/[^0-9./-]/g, '');
 
   let partes = valor_nuevo.value.split('/');
 
@@ -507,6 +520,11 @@ const crearRestriccion = (indice, cantidadVariables) => {
   restriccion.classList.add('restriccion');
   restriccion.id = `restriccion${indice}`;
 
+  // Si el método es gráfico, forzar la cantidad de variables a 2
+  if (metodo === 'grafico') {
+    cantidadVariables = 2;
+  }
+
   for (let i = 0; i < cantidadVariables; i++) {
     const input = document.createElement('input');
     input.type = 'number';
@@ -571,7 +589,12 @@ generarRestricciones.addEventListener('click', () => {
     return;
   }
 
-  const cantidad_variables = parseInt(inputCantidadVariables.value);
+  let cantidad_variables = parseInt(inputCantidadVariables.value);
+
+  // Si el método es gráfico, forzar la cantidad de variables a 2
+  if (metodo === 'grafico') {
+    cantidad_variables = 2;
+  }
 
   // Limpiar campos previos
   camposRestricciones.innerHTML = '';
