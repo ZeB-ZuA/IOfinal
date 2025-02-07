@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="src/reset.css" />
+    <link rel="stylesheet" href="src/style.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+    </style>
+    <div class="container">
+      <section class="form_container">
+        <form id="dynamicForm">
+          <!-- Sección principal -->
+          <div class="section seccion__tipo">
+            <div class="section-title">¿De que tipo es el problema?</div>
+            <label>
+              <input
+                type="radio"
+                name="tipo"
+                value="max"
+                id="maximizacion"
+                required
+              />
+              Maximización
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="tipo"
+                value="min"
+                id="minimizacion"
+                required
+              />
+              Minimizacion
+            </label>
+          </div>
+
+          <div class="section seccion__metodo">
+            <div class="section-title">¿Qué método desea escoger?</div>
+            <label>
+              <input
+                type="radio"
+                name="metodo"
+                value="grafico"
+                id="metodoGrafico"
+                required
+              />
+              Método gráfico
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="metodo"
+                value="dosPasos"
+                id="metodoDosPasos"
+                required
+              />
+              Método dos pasos
+            </label>
+          </div>
+
+          <!-- Sección de la cantidad de variables (especificamente para el metodo de dos fases)-->
+          <div id="variables" class="section hidden seccion__variables">
+            <div class="section-title">Cantidad de variables</div>
+            <label for="cantidadDeVariables">Cantidad de variables:</label>
+            <input
+              type="number"
+              id="cantidadDeVariables"
+              min="1"
+              placeholder="Ingrese un número"
+            />
+            <button type="button" id="generarFuncionObjetivo">
+              Generar Funcion objetivo
+            </button>
+          </div>
+
+          <!-- Sección Función Objetivo -->
+          <div
+            id="funcionObjetivo"
+            class="section hidden seccion__funcionObjetivo"
+          >
+            <div class="section-title">Función objetivo</div>
+
+            <div id="graficoCampos" class="hidden">
+              <input
+                type="text"
+                placeholder="Número 1"
+                step="any"
+                class="funcion_objetivo_input fo_numero_1"
+                id="Numero_1"
+              />
+              X1
+              <select class="funcion_objetivo_input">
+                <option value="+">+</option>
+                <option value="-">-</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Número 2"
+                step="any"
+                class="funcion_objetivo_input fo_numero_2"
+                id="Numero_2"
+              />
+              X2
+            </div>
+
+            <div id="dosFasesCampos" class="hidden"></div>
+          </div>
+
+          <!-- Sección Restricciones -->
+          <div id="restricciones" class="section hidden seccion__restricciones">
+            <div class="section-title">Restricciones</div>
+            <label for="cantidadRestricciones"
+              >Cantidad de restricciones:</label
+            >
+            <input
+              type="number"
+              id="cantidadRestricciones"
+              min="1"
+              placeholder="Ingrese un número"
+              required
+            />
+            <button type="button" id="generarRestricciones">Generar</button>
+            <div id="camposRestricciones"></div>
+          </div>
+
+          <button id="enviar__datos">Enviar datos</button>
+        </form>
+      </section>
+      <section class="data_graphics">
+        <div class="data_graphics__data"></div>
+        <div class="data_graphics__graphics">
+          <div id="calculator">
+            <div id="modal" class="modal">
+              <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Resultados de la Petición</h2>
+                <div id="modal-body"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script type="module" src="src/main.js"></script>
+    <script src="https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/14.0.0/math.js"></script>
+  </body>
+</html>
