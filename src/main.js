@@ -58,41 +58,28 @@ let restricciones__transformadas = [];
 Crea la información asociada al resultado de la petición
 */
 const crear_panel_informacion_graficos = (informacion) => {
-  /*La variable panel, alojara la informacion de la petición
-    Las intersecciones .
-    Y el valor resultado.
-  */
   const panel = document.createElement('div');
   panel.classList.add('panel_datos_grafica');
 
-  const panel_interseccion = document.createElement('ul');
-  panel_interseccion.classList.add('panel_datos_grafica-intersecciones');
-
-  const panel_grafica_valor = document.createElement('ul');
-  panel_grafica_valor.classList.add('panel_datos_grafica__valor');
-
-  informacion.allIntersections.forEach((interseccion, i) => {
-    const item_punto_interseccion = document.createElement('li');
-
-    item_punto_interseccion.innerHTML = `<strong>Interseccion #${
-      i + 1
-    }: </strong>(${interseccion.x},${interseccion.y}) `;
-    panel_interseccion.appendChild(item_punto_interseccion);
-  });
+  const titulo = document.createElement('p');
+  titulo.classList.add('titulo');
+  titulo.innerHTML = 'Resultados de la Intersección';
+  panel.appendChild(titulo);
 
   let indice;
+  const item_valor_interseccion_resultado = document.createElement('p');
+  const item_valor_resultado = document.createElement('p');
 
-  const item_valor_interseccion_resultado = document.createElement('li');
-  const item_valor_resultado = document.createElement('li');
   if (tipo == 'max') {
     indice = informacion.maxIndex;
-    item_valor_resultado.innerHTML = `Valor maximo : ${informacion.maxValue}`;
+    item_valor_resultado.innerHTML = `Valor máximo: ${informacion.maxValue}`;
   } else {
     indice = informacion.minIndex;
-    item_valor_resultado.innerHTML = `Valor minimo : ${informacion.minValue}`;
+    item_valor_resultado.innerHTML = `Valor mínimo: ${informacion.minValue}`;
   }
 
-  item_valor_interseccion_resultado.innerHTML = `Interseccion resultado (${informacion.allIntersections[indice].x}, ${informacion.allIntersections[indice].y})`;
+  const interseccion = informacion.allIntersections[indice];
+  item_valor_interseccion_resultado.innerHTML = `Intersección resultado: X<sub>1</sub> = ${interseccion.x}, X<sub>2</sub> = ${interseccion.y}`;
 
   console.log(
     `DATOS DE LA PETICION:
@@ -103,18 +90,14 @@ const crear_panel_informacion_graficos = (informacion) => {
      - indice del valor_maximo : ${informacion.maxIndex}
 
      - indice prueba ${indice}
-     - interseccion resultado (${informacion.allIntersections[indice].x}, ${informacion.allIntersections[indice].y})
+     - interseccion resultado (${interseccion.x}, ${interseccion.y})
     `
   );
 
-  console.log(informacion.allIntersections[indice]);
+  console.log(interseccion);
 
-  panel_grafica_valor.innerHTML = ``;
-  panel_grafica_valor.appendChild(item_valor_interseccion_resultado);
-  panel_grafica_valor.appendChild(item_valor_resultado);
-
-  panel.appendChild(panel_grafica_valor);
-  panel.appendChild(panel_interseccion);
+  panel.appendChild(item_valor_interseccion_resultado);
+  panel.appendChild(item_valor_resultado);
 
   return panel;
 };
@@ -343,8 +326,12 @@ formulario.addEventListener('submit', async (e) => {
 
   const panel_datos_grafica = crear_panel_informacion_graficos(informacion);
   const resultPanel = document.getElementById('resultPanel');
-  resultPanel.innerHTML = '';
-  resultPanel.appendChild(panel_datos_grafica);
+  if (resultPanel) {
+    resultPanel.innerHTML = '';
+    resultPanel.appendChild(panel_datos_grafica);
+  } else {
+    console.error('El elemento resultPanel no se encontró en el DOM.');
+  }
 
   seccion_datos_grafica.innerHTML = ' ';
   seccion_datos_grafica.appendChild(panel_datos_grafica);

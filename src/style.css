@@ -184,3 +184,26 @@ button {
   background-color: #f0f0f0; /* Color gris claro */
   font-weight: bold;
 }
+
+.panel_datos_grafica {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.panel_datos_grafica p {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 8px 0;
+}
+
+.panel_datos_grafica .titulo {
+  font-size: 20px;
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 12px;
+}
