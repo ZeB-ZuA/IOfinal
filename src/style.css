@@ -242,9 +242,9 @@ button {
   background-color: #f2f2f2;
   font-weight: bold;
 }
-/* filepath: /c:/Users/User/Downloads/IOFinal/src/style.css */
+
 footer {
-  background-color: #f1f1f1;
+  background-color: aqua;
   text-align: center;
   padding: 10px 0;
   position: fixed;
@@ -255,5 +255,7 @@ footer {
 footer p {
   margin: 0;
   font-size: 14px;
-  color: #333;
+  color: black;
+  font-weight: bold;
+
 }
