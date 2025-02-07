@@ -338,6 +338,65 @@ formulario.addEventListener('submit', async (e) => {
 
   graficar(funcion_objetivo_enviar, informacion);
 
+  // Agregar el botón dinámicamente
+  const botonGenerarEnOtroMetodo = document.createElement('button');
+  botonGenerarEnOtroMetodo.type = 'button';
+  botonGenerarEnOtroMetodo.id = 'generarEnOtroMetodo';
+  botonGenerarEnOtroMetodo.textContent = 'Generar en dos fases';
+  botonGenerarEnOtroMetodo.addEventListener('click', async () => {
+    const inputs_funcion_objetivo = Array.from(
+      document.querySelectorAll('.funcion_objetivo_input')
+    );
+
+    let funcion_objetivo_enviar = '';
+
+    inputs_funcion_objetivo.forEach((elemento, i) => {
+      console.log(
+        `Valor del input de la función objetivo ${i + 1}: ${elemento.value}`
+      );
+      funcion_objetivo_enviar = crearCadenaMetodoGrafico(
+        funcion_objetivo_enviar,
+        elemento.value,
+        i
+      );
+    });
+
+    const inputs_restricciones = Array.from(
+      document.querySelectorAll('.restriccion')
+    );
+
+    let restricciones__transformadas = [];
+
+    inputs_restricciones.forEach((restriccion) => {
+      const inputs = Array.from(restriccion.children);
+
+      let restriccion_final = '';
+
+      inputs.forEach((input, i) => {
+        restriccion_final = crearCadenaMetodoGrafico(
+          restriccion_final,
+          input.value,
+          i
+        );
+      });
+
+      restricciones__transformadas.push(restriccion_final.trim());
+    });
+
+    console.log(`restricciones transformadas: ${restricciones__transformadas}`);
+
+    // Realizar una nueva petición al endpoint correspondiente
+    const informacion = await realizarPeticionOtroMetodo(
+      funcion_objetivo_enviar,
+      restricciones__transformadas,
+      tipo
+    );
+
+    mostrarResultados(informacion);
+  });
+
+  resultPanel.appendChild(botonGenerarEnOtroMetodo);
+
   alert(informacion);
 });
 
@@ -406,20 +465,51 @@ const realizarPeticion = async (funcionObjetivo, arrayRestricciones, tipo) => {
   return data;
 };
 
+const realizarPeticionOtroMetodo = async (funcionObjetivo, arrayRestricciones, tipo) => {
+  const urlPeticion = 'https://graphicalmethodapi-dmd3bca6e6dpenev.canadacentral-01.azurewebsites.net/graphical-method/two-phases';
+
+  const body_de_peticion = {
+    objectiveFunctionText: funcionObjetivo,
+    restrictionsText: arrayRestricciones,
+    isMaximization: tipo === 'max',
+  };
+  console.log(body_de_peticion);
+
+  const response = await fetch(urlPeticion, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body_de_peticion),
+  });
+
+  const data = await response.json();
+  console.log(data);
+
+  const mappedObject = mapResponseToJSObject(data);
+  console.log(mappedObject);
+
+  return mappedObject;
+};
+
 const validar_numeros = (valor_nuevo) => {
   if (!valor_nuevo || !valor_nuevo.value) {
     console.error('valor_nuevo no es un input válido ' + valor_nuevo.value);
     return '';
   }
 
+  // Permitir solo números, puntos, barras y guiones
   valor_nuevo.value = valor_nuevo.value.replace(/[^0-9./-]/g, '');
 
+  // Dividir el valor en partes por la barra de fracción
   let partes = valor_nuevo.value.split('/');
 
+  // Si hay más de una barra de fracción, mantener solo la primera
   if (partes.length > 2) {
     valor_nuevo.value = partes[0] + '/' + partes[1];
   }
 
+  // Validar cada parte del número
   for (let j = 0; j < partes.length; j++) {
     let subPartes = partes[j].split('.');
     if (subPartes.length > 2) {
@@ -427,6 +517,7 @@ const validar_numeros = (valor_nuevo) => {
     }
   }
 
+  // Si el valor es una fracción, calcular el valor decimal
   if (partes.length === 2 && partes[1] !== '') {
     let numerador = parseFloat(partes[0]);
     let denominador = parseFloat(partes[1]);
@@ -514,9 +605,14 @@ const crearRestriccion = (indice, cantidadVariables) => {
 
   for (let i = 0; i < cantidadVariables; i++) {
     const input = document.createElement('input');
-    input.type = 'number';
+    input.type = 'text'; // Cambiar a 'text' para permitir decimales y fracciones
     input.required = true;
     input.id = `restriccion_${indice}_${i + 1}`;
+
+    // Agregar evento input para validar decimales y fracciones
+    input.addEventListener('input', () => {
+      validar_numeros(input);
+    });
 
     const simbolo = document.createElement('select');
     simbolo.required = true;
@@ -558,9 +654,14 @@ const crearRestriccion = (indice, cantidadVariables) => {
   simboloFinal.appendChild(opcionMenorIgual);
 
   const inputResultado = document.createElement('input');
-  inputResultado.type = 'number';
+  inputResultado.type = 'text'; // Cambiar a 'text' para permitir decimales y fracciones
   inputResultado.required = true;
   inputResultado.id = `restriccion_${indice}_resultado`;
+
+  // Agregar evento input para validar decimales y fracciones
+  inputResultado.addEventListener('input', () => {
+    validar_numeros(inputResultado);
+  });
 
   restriccion.appendChild(simboloFinal);
   restriccion.appendChild(inputResultado);
@@ -639,7 +740,7 @@ const mostrarResultados = (data) => {
   const modalBody = document.getElementById('modal-body');
   modalBody.innerHTML = '';
 
-  const createTable = (phaseResponses, phaseName) => {
+  const createTable = (phaseResponses, phaseName, isSecondPhase = false) => {
     const phaseTitle = document.createElement('h3');
     phaseTitle.textContent = phaseName;
     modalBody.appendChild(phaseTitle);
@@ -665,7 +766,7 @@ const mostrarResultados = (data) => {
         const rowElement = document.createElement('tr');
         row.forEach((value) => {
           const cell = document.createElement('td');
-          cell.textContent = value.toFixed(2); // Redondear a 2 decimales
+          cell.textContent = decimalToFraction(value); // Convertir a fracción
           rowElement.appendChild(cell);
         });
         table.appendChild(rowElement);
@@ -673,35 +774,92 @@ const mostrarResultados = (data) => {
 
       // Agregar fila Z
       const zRow = document.createElement('tr');
+      zRow.classList.add('z-row'); // Agregar la clase z-row
       response.z.forEach((value, index) => {
         const cell = document.createElement('td');
-        cell.textContent = value.toFixed(2);
+        cell.textContent = decimalToFraction(value); // Convertir a fracción
         zRow.appendChild(cell);
       });
       table.appendChild(zRow);
 
-      // Agregar CX
+      // Crear tabla interna para Cx
+      const cxTable = document.createElement('table');
+      cxTable.classList.add('inner-table');
+      const cxHeaderRow = document.createElement('tr');
+      const cxHeaderKey = document.createElement('th');
+      cxHeaderKey.textContent = 'Cx';
+      const cxHeaderValue = document.createElement('th');
+      cxHeaderValue.textContent = 'Coeficiente';
+      cxHeaderRow.appendChild(cxHeaderKey);
+      cxHeaderRow.appendChild(cxHeaderValue);
+      cxTable.appendChild(cxHeaderRow);
+
+      Object.entries(response.cx).forEach(([key, value]) => {
+        const cxRow = document.createElement('tr');
+        const cxKeyCell = document.createElement('td');
+        cxKeyCell.textContent = key;
+        const cxValueCell = document.createElement('td');
+        cxValueCell.textContent = decimalToFraction(value); // Convertir a fracción
+        cxRow.appendChild(cxKeyCell);
+        cxRow.appendChild(cxValueCell);
+        cxTable.appendChild(cxRow);
+      });
+
+      // Crear tabla interna para Cj
+      const cjTable = document.createElement('table');
+      cjTable.classList.add('inner-table');
+      const cjHeaderRow = document.createElement('tr');
+      const cjHeaderKey = document.createElement('th');
+      cjHeaderKey.textContent = 'Cj';
+      const cjHeaderValue = document.createElement('th');
+      cjHeaderValue.textContent = 'Coeficiente';
+      cjHeaderRow.appendChild(cjHeaderKey);
+      cjHeaderRow.appendChild(cjHeaderValue);
+      cjTable.appendChild(cjHeaderRow);
+
+      Object.entries(response.cj).forEach(([key, value]) => {
+        const cjRow = document.createElement('tr');
+        const cjKeyCell = document.createElement('td');
+        cjKeyCell.textContent = key;
+        const cjValueCell = document.createElement('td');
+        cjValueCell.textContent = decimalToFraction(value); // Convertir a fracción
+        cjRow.appendChild(cjKeyCell);
+        cjRow.appendChild(cjValueCell);
+        cjTable.appendChild(cjRow);
+      });
+
+      // Agregar las tablas internas a la tabla principal
       const cxRow = document.createElement('tr');
       const cxCell = document.createElement('td');
       cxCell.colSpan = headers.length;
-      cxCell.textContent = 'Cx: ' + JSON.stringify(response.cx);
+      cxCell.appendChild(cxTable);
       cxRow.appendChild(cxCell);
       table.appendChild(cxRow);
 
-      // Agregar CJ
       const cjRow = document.createElement('tr');
       const cjCell = document.createElement('td');
       cjCell.colSpan = headers.length;
-      cjCell.textContent = 'Cj: ' + JSON.stringify(response.cj);
+      cjCell.appendChild(cjTable);
       cjRow.appendChild(cjCell);
       table.appendChild(cjRow);
+
+      // Mostrar la respuesta final si es la segunda fase
+      if (isSecondPhase && index === phaseResponses.length - 1) {
+        const finalResultRow = document.createElement('tr');
+        const finalResultCell = document.createElement('td');
+        finalResultCell.colSpan = headers.length;
+        finalResultCell.textContent = 'Respuesta final: ' + decimalToFraction(response.z[response.z.length - 1]);
+        finalResultCell.style.fontWeight = 'bold';
+        finalResultRow.appendChild(finalResultCell);
+        table.appendChild(finalResultRow);
+      }
 
       modalBody.appendChild(table);
     });
   };
 
   createTable(data.firstPhaseResponses, 'First Phase Responses');
-  createTable(data.secondPhaseResponses, 'Second Phase Responses');
+  createTable(data.secondPhaseResponses, 'Second Phase Responses', true);
 
   modal.style.display = 'block';
 
@@ -715,4 +873,26 @@ const mostrarResultados = (data) => {
       modal.style.display = 'none';
     }
   };
+};
+
+const decimalToFraction = (decimal) => {
+  if (decimal % 1 === 0) {
+    return decimal.toString();
+  }
+
+  const gcd = (a, b) => {
+    if (b < 0.0000001) return a;
+    return gcd(b, Math.floor(a % b));
+  };
+
+  const len = decimal.toString().length - 2;
+  let denominator = Math.pow(10, len); // Cambiar const a let
+  let numerator = decimal * denominator; // Cambiar const a let
+
+  const divisor = gcd(numerator, denominator);
+
+  numerator /= divisor;
+  denominator /= divisor;
+
+  return Math.floor(numerator) + '/' + Math.floor(denominator);
 };

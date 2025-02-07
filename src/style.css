@@ -9,6 +9,7 @@
 body {
   background-color: var(--fondo);
 }
+
 .container {
   display: grid;
   grid-template-columns: max-content 1fr;
@@ -55,6 +56,7 @@ button {
   border-radius: 10px;
   padding: 5px;
 }
+
 #enviar__datos {
   align-self: center;
 }
@@ -101,9 +103,11 @@ button {
 .hidden {
   display: none;
 }
+
 .section {
   margin-bottom: 20px;
 }
+
 .section-title {
   font-weight: bold;
   margin-bottom: 10px;
@@ -175,13 +179,15 @@ button {
 .result-table th {
   padding-top: 12px;
   padding-bottom: 12px;
-  text-align: left;
+  text-align: center;
   background-color: #4caf50;
-  color: white;
+  color: black;
+
 }
 
 .fila-z {
-  background-color: #f0f0f0; /* Color gris claro */
+  background-color: #f0f0f0;
+  /* Color gris claro */
   font-weight: bold;
 }
 
@@ -206,4 +212,33 @@ button {
   font-weight: bold;
   color: #007bff;
   margin-bottom: 12px;
+}
+
+.result-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.result-table tr.z-row {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.inner-table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+}
+
+.inner-table th,
+.inner-table td {
+  border: 1px solid #ddd;
+  padding: 0px;
+  width: min-content;
+  text-align: center;
+  
+}
+
+.inner-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
 }
